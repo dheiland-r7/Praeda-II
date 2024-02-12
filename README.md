@@ -1,39 +1,49 @@
-Praeda II
+#**Praeda II**
 This file is used to list a few config items and recommendation. Also some basic Praeda syntax 
 
 
 Required Python modules:  This is to be added later
 ???
 
-PRAEDA OPTIONS:
+**PRAEDA OPTIONS:**
+
 -g GNMAP_FILE
+
 -n CIDR or CIDR_FILE 
+
 -t TARGET_FILE
+
 -p TCP_PORT
+
 -j PTOJECT_NAME
+
 -l OUTPUT_LOG_FILE
+
 -S SSL
 
-GNMAP_FILE = This is a .gnmap file output by a nmap scan.
-CIDR & CIDR_FILE = Subnet CIDR "192.168.1.0/24" or file containing list of CIDRs
-TARGET_FILE = List of IP addresses or Host names to enumerated
-TCP_PORT = port address of targets to scan " At present only one port can be specified. This is expected to be modified in future version"
-PROJECT_NAME = the name for this project. This will create a folder under the folder where Praeda was executed to contain logs and export info.
-OUTPUT_LOG_FILE = name of log file for data output
+**GNMAP_FILE** = This is a .gnmap file output by a nmap scan.
+
+**CIDR & CIDR_FILE** = Subnet CIDR "192.168.1.0/24" or file containing list of CIDRs
+
+**TARGET_FILE** = List of IP addresses or Host names to enumerated
+
+**TCP_PORT** = port address of targets to scan " At present only one port can be specified. This is expected to be modified in future version"
+
+**PROJECT_NAME** = the name for this project. This will create a folder under the folder where Praeda was executed to contain logs and export info.
+
+**OUTPUT_LOG_FILE** = name of log file for data output
 
 
-SYNTAX FOR GNMAP FILE INPUT:
+**SYNTAX FOR GNMAP FILE INPUT:**
 praeda.pl -g GNMAP_FILE -j PROJECT_NAME -l OUTPUT_LOG_FILE
 
-SYNTAX FOR IP  CIDR/CIDR FILE LIST:
+**SYNTAX FOR IP  CIDR/CIDR FILE LIST:**
 praeda.pl -t CIDR or CIDR_FILE -p TCP_PORT -j PROJECT_NAME -l OUTPUT_LOG_FILE -s SSL
 
-
-SYNTAX FOR IP TARGET FILE LIST:
+**SYNTAX FOR IP TARGET FILE LIST:**
 praeda.pl -t TARGET_FILE -p TCP_PORT -j PROJECT_NAME -l OUTPUT_LOG_FILE -s SSL 
  
-
-Examples:
+**Examples:**
 
 ./praeda.pl -g scan1.gnmap -j acmewidget -l results
 
