@@ -1,8 +1,8 @@
 #**Praeda II**
 This file is used to list a few config items and recommendation. Also some basic Praeda syntax 
 
-
 Required Python modules:  This is to be added later
+
 ???
 
 **PRAEDA OPTIONS:**
