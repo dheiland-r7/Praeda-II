@@ -5,7 +5,7 @@
 #              Deral 'percent_x' Heiland             #
 ######################################################
 # this module will work on the following Xerox models
-#     VersaLink C7*** & B7***
+#      VersaLink C7020,C7025,C7130,B7030,B7125
 #
 #
 #
