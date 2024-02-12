@@ -8,6 +8,7 @@ Required Python modules:
 ??? to be added later 
 
 PRAEDA OPTIONS:
+
 -g GNMAP_FILE
 -n CIDR or CIDR_FILE 
 -t TARGET_FILE
@@ -15,6 +16,7 @@ PRAEDA OPTIONS:
 -j PTOJECT_NAME
 -l OUTPUT_LOG_FILE
 -S SSL
+
 
 GNMAP_FILE = This is a .gnmap file output by a nmap scan.
 CIDR & CIDR_FILE = Subnet CIDR "192.168.1.0/24" or file containing list of CIDRs
