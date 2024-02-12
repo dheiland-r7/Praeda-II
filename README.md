@@ -10,11 +10,17 @@ Required Python modules:
 PRAEDA OPTIONS:
 
 -g GNMAP_FILE
+
 -n CIDR or CIDR_FILE 
+
 -t TARGET_FILE
+
 -p TCP_PORT
+
 -j PTOJECT_NAME
+
 -l OUTPUT_LOG_FILE
+
 -S SSL
 
 
