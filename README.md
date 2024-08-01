@@ -43,25 +43,25 @@ The recommended soluton for the above issues is to install and run Praeda-II on 
 
 
 **SYNTAX FOR GNMAP FILE INPUT:**
-praeda.py -g GNMAP_FILE -j PROJECT_NAME -l OUTPUT_LOG_FILE
+Praeda.py -g GNMAP_FILE -j PROJECT_NAME -l OUTPUT_LOG_FILE
 
 **SYNTAX FOR IP  CIDR/CIDR FILE LIST:**
-praeda.py -t CIDR or CIDR_FILE -p TCP_PORT -j PROJECT_NAME -l OUTPUT_LOG_FILE -s SSL
+Praeda.py -t CIDR or CIDR_FILE -p TCP_PORT -j PROJECT_NAME -l OUTPUT_LOG_FILE -s SSL
 
 **SYNTAX FOR IP TARGET FILE LIST:**
-praeda.py -t TARGET_FILE -p TCP_PORT -j PROJECT_NAME -l OUTPUT_LOG_FILE -s SSL 
+Praeda.py -t TARGET_FILE -p TCP_PORT -j PROJECT_NAME -l OUTPUT_LOG_FILE -s SSL 
  
 **Examples:**
 
-./praeda.py -g scan1.gnmap -j acmewidget -l results
+./Praeda.py -g scan1.gnmap -j acmewidget -l results
 
-./praeda.py  -n 10.10.10.0/24 -p 80  -j project1 -l data-file
+./Praeda.py  -n 10.10.10.0/24 -p 80  -j project1 -l data-file
 
-./praeda.py  -n cidrs.txt -p 80  -j project1 -l data-file
+./Praeda.py  -n cidrs.txt -p 80  -j project1 -l data-file
 
-./praeda.py  -t target.txt -p 80  -j project1 -l data-file
+./Praeda.py  -t target.txt -p 80  -j project1 -l data-file
 
-./praeda.py  -t target.txt -p 443  -j project1 -l data-file -s SSL
+./Praeda.py  -t target.txt -p 443  -j project1 -l data-file -s SSL
 
 The results will create a folder called project1 and save all information in that folder. Also this will write out the following data.
 targetdata.txt  : This is the parsed results of .gnmap file
