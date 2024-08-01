@@ -11,7 +11,7 @@ Also if during operation if you receive SSL error **"[SSL: UNSAFE_LEGACY_RENEGOT
 
 **https://pipeawk.com/index.php/2022/05/19/openssl-enable-legacy-renegotiation/**
 
-Another solution is to install Praeda-II on a Kali images which has the legacy renegotiation enabled or do the above on a VM images and not your primary machine.
+The recommended soluton for the above issues is to install and run Praeda-II on a Kali images which has the legacy renegotiation enabled or do the above on a VM images and not your primary machine.
 
 **PRAEDA OPTIONS:**
 
