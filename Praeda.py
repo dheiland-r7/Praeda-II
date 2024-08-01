@@ -79,9 +79,9 @@ if (options["g"] and (options["t"] or options["p"])) or (options["g"] and (optio
         options["g"] and options["n"]):
     print("-g and -t or -p options are not allowed at the same time")
     print("The correct options syntax are:")
-    print("For GNMAP input:  praeda.py -g GNMAP_FILE -j PROJECT_NAME -l OUTPUT_LOG_FILE")
-    print("For target input: praeda.py -t TARGET_FILE -p TCP_PORT -j PROJECT_NAME -l OUTPUT_LOG_FILE -s SSL")
-    print("For CIDR input:   praeda.py -n CIDR or CIDR_FILE -p TCP_PORT -j PROJECT_NAME -l OUTPUT_LOG_FILE -s SSL")
+    print("For GNMAP input:  Praeda.py -g GNMAP_FILE -j PROJECT_NAME -l OUTPUT_LOG_FILE")
+    print("For target input: Praeda.py -t TARGET_FILE -p TCP_PORT -j PROJECT_NAME -l OUTPUT_LOG_FILE -s SSL")
+    print("For CIDR input:   Praeda.py -n CIDR or CIDR_FILE -p TCP_PORT -j PROJECT_NAME -l OUTPUT_LOG_FILE -s SSL")
     sys.exit(1)
 elif options["g"] and (not options["j"] or not options["l"]):
     print("Options -j and -l are both required when using option -g")
