@@ -9,7 +9,7 @@
 #                                                 
 #   Deral (Percent_x) Heiland - Rapid7 
 #   Copywrite 2023, 2024
-#   PRAEDA II version 0.01.0.4b
+#   PRAEDA II version 1.1b
 ###################################################
 
 
