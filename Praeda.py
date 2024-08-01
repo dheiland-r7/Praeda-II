@@ -7,8 +7,9 @@
 # | |   | | | (_| |  __/ (_| | (_| |  _| |_ _| |_ 
 # |_|   |_|  \__,_|\___|\__,_|\__,_| |_____|_____|
 #                                                 
-#   Deral (Percent_x) Heiland - Copywrite 2023
-#   PRAEDA II version 0.01.0.1b
+#   Deral (Percent_x) Heiland - Rapid7 
+#   Copywrite 2023, 2024
+#   PRAEDA II version 0.01.0.4b
 ###################################################
 
 
@@ -23,16 +24,15 @@ from pysnmp.entity.rfc3413.oneliner import cmdgen
 from netaddr import IPNetwork, IPAddress
 import urllib3
 from urllib3.exceptions import InsecureRequestWarning
-# import urllib.request
-# import urllib.error
 import requests
+from requests.exceptions import RequestException
 from pysnmp.hlapi import *
+from requests.adapters import HTTPAdapter
+from urllib3.poolmanager import PoolManager
+import ssl
 
 # Suppress SSL/TLS warnings
 urllib3.disable_warnings(InsecureRequestWarning)
-
-# Disable SSL verification (not recommended for production)
-# requests.packages.urllib3.disable_warnings()
 
 # Set Constants
 SOCKET_IS_UP = 0
@@ -127,6 +127,7 @@ if not os.path.exists(options["j"]):
 # Check if port is open and contains http
 def check_port(target, ports):
     status = SOCKET_IS_DOWN
+    
     try:
         sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         sock.settimeout(REQUEST_TIMEOUT)
@@ -143,7 +144,7 @@ def gnmap_parse(GNMAPFILE, OUTPUT):
     try:
         current_host = None
         with open(GNMAPFILE, 'r') as myinputfile:
-            with open(f'./{OUTPUT}/targetdata.txt', 'w') as outfile:
+            with open(f'{OUTPUT}/targetdata.txt', 'w') as outfile:
                 for line in myinputfile:
                     line = line.strip()
                     if not line or line.startswith('#'):
@@ -172,7 +173,7 @@ def gnmap_parse(GNMAPFILE, OUTPUT):
 
 # cidr input parse routine
 def cidr_parse(CIDRFIL, OUTPUT):
-    targetdata_file = f'./{OUTPUT}/targetdata.txt'
+    targetdata_file = f'{OUTPUT}/targetdata.txt'
     try:
         if os.path.exists(targetdata_file):
            os.remove(targetdata_file)
@@ -216,6 +217,26 @@ def snmp_get(target):
         # Extract the value of the sysDescr OID
         sys_descr_value = var_binds[0][1].prettyPrint()
         return sys_descr_value
+
+# Create a custom adapter to set the SECLEVEL
+class SSLAdapter(HTTPAdapter):
+    def __init__(self, *args, **kwargs):
+        # Create a default SSL context
+        self.ssl_context = ssl.create_default_context()
+        # Set the ciphers to lower SECLEVEL
+        self.ssl_context.set_ciphers('DEFAULT:@SECLEVEL=1')
+        # Disable hostname checking to handle CERT_NONE
+        self.ssl_context.check_hostname = False
+        self.ssl_context.verify_mode = ssl.CERT_NONE
+        super().__init__(*args, **kwargs)
+
+    def init_poolmanager(self, connections, maxsize, block=False):
+        self.poolmanager = PoolManager(
+            num_pools=connections,
+            maxsize=maxsize,
+            block=block,
+            ssl_context=self.ssl_context,
+        )
 
 
 #--------------------------------------------END--Subroutines---------------------------------------------------#
@@ -265,45 +286,69 @@ for TARGET in targets:
     
 # Call Port Check Routine
     status = check_port(TARGET, PORTS)
-
+    
     if status == SOCKET_IS_DOWN:
         print(f"{TARGET}:{PORTS}:NO ANSWER RETURNED")
 
 # Perform HTTP request to gather title/server data and call SNMP routin for gather SNMP device name data
     else:
+        try:
+            # Create a session and attach the custom SSL adapter
+            session = requests.Session()
+            session.mount('https://', SSLAdapter())
+            session.mount('http://', SSLAdapter())
         # Make an HTTP request
-        url = f"http{web}://{TARGET}:{PORTS}/"
-        response = requests.get(url, verify=False)
+            url = f"http{web}://{TARGET}:{PORTS}/"  
+            #response = requests.get(url, verify=False)  # `verify=False` skips SSL certificate verification. 
+            response = session.get(url, verify=False)  # `verify=False` skips SSL certificate verification. 
 
-        # Extract data from the HTTP response
-        d1 = response.headers.get("Title", "")
-        d2 = response.headers.get("Server", "")
-        
-        # call snmp routine for target data
-        d3 = snmp_get(TARGET)
+        # Check if the request was successful
+            if response.status_code == 200:
+            # Extract data from the HTTP response
+                d1 = response.headers.get("Title", "")
+                d1 = d1.replace(":", ";")
+                d2 = response.headers.get("Server", "")
+                d2 = d2.replace(":", ";")
+            # call snmp routine for target data
+                d3 = snmp_get(TARGET)
+                d3 = d3.replace(":", ";")
 
-        # print to screen targeted device inforation
-        print(f"{TARGET}:{PORTS}:{d1}:{d2}:{d3}")
+            # print to screen targeted device inforation
+                print(f"{TARGET}:{PORTS}:{d1}:{d2}:{d3}")
 
-        with open(f"./{OUTPUT}/{LOGFILE}-WebHost.txt", 'a') as webFile:
-            webFile.write(f"\n{TARGET}:{PORTS}:{d1}:{d2}:{d3}\n")
+                with open(f"{OUTPUT}/{LOGFILE}-WebHost.txt", 'a') as webFile:
+                    webFile.write(f"\n{TARGET}:{PORTS}:{d1}:{d2}:{d3}\n")
 
-        for DataEntry in raw_data:
-            values = DataEntry.split('|')
-            data = values[0]
-            data1 = values[1]
-            data2 = values[2]
-            if (data1.lower() in data.lower() and data2.lower() in d3.lower()) or (
-                     #"SNMP" in data2 and data1.lower() in d3.lower()):
-                     "SNMP" in data2 and data1.lower() in d3.lower()):
-                num = len(values)
-                for i in range(3, num):
-                    if values[i] != '':
-                        with open(f"./{OUTPUT}/{LOGFILE}.log", 'a') as logFile:
-                            logFile.write(f"\n{TARGET}:{PORTS}:{data1}:{data2}:\n")
-                        job = values[i]
-                        module = __import__(f'jobs.{job}', fromlist=[job])
-                        job_func = getattr(module, job)
-                        result = job_func(TARGET, PORTS, web, OUTPUT, LOGFILE)
+                for DataEntry in raw_data:
+                    values = DataEntry.split('|')
+                    data = values[0]
+                    data1 = values[1]
+                    data2 = values[2]
+                    #if (data1.lower() in data.lower() and data2.lower() in d3.lower()) or (
+                    #         #"SNMP" in data2 and data1.lower() in d3.lower()):
+                    #         "SNMP" in data2 and data1.lower() in d3.lower()):
+                    if ("HEADER" in data2 and data1.lower() in d2.lower()) or (
+                             "SNMP" in data2 and data1.lower() in d3.lower()) or (
+                             "SERVER" in data2 and data1.lower() in d2.lower()):
+
+                        num = len(values)
+                        for i in range(3, num):
+                            if values[i] != '':
+                                with open(f"{OUTPUT}/{LOGFILE}.log", 'a') as logFile:
+                                    logFile.write(f"\n{TARGET}:{PORTS}:{data1}:{data2}:\n")
+                                job = values[i]
+                                module = __import__(f'jobs.{job}', fromlist=[job])
+                                job_func = getattr(module, job)
+                                result = job_func(TARGET, PORTS, web, OUTPUT, LOGFILE, data1)
+
+            else:
+                print(f"Failed to retrieve data. Status code: {response.status_code}")
+        except RequestException as e:
+            # Handles any request-related errors
+                print(f"An error occurred while trying to retrieve data from {url}: {e}")
+        except Exception as e:
+            # A catch-all for any other errors that were not anticipated
+                print(f"An unexpected error occurred: {e}")
+
 
 #-----------------------------------------------END OF ALL------------------------------------------------------#
