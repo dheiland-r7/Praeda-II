@@ -4,11 +4,13 @@
 This file is used to list a few config items and recommendations. Also some basic Praeda syntax. 
 
 Required Python modules:  
+  ```
   bs4==0.0.2
   netaddr==1.3.0
   pyasn1==0.5.1
   pysnmp==4.4.12
   urllib3==2.2.3
+```
 
 To install, it's highly recommended to use a Python 3.10 or higher virtual environment to avoid version dependency conflicts.
 
