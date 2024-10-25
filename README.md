@@ -38,7 +38,11 @@ The recommended soluton for the above issues is to install and run Praeda-II on 
 
 -t TARGET_FILE
 
+-r RESUME_SCAN
+
 -p TCP_PORT
+
+-i IGNORE_PORTS
 
 -j PTOJECT_NAME
 
@@ -52,25 +56,33 @@ The recommended soluton for the above issues is to install and run Praeda-II on 
 
 **TARGET_FILE** = List of IP addresses or Host names to be enumerated
 
+**RESUME_SCAN** = set to "true" to have Praeda resume a previously incomplete scan
+
 **TCP_PORT** = port address of targets to scan " At present only one port can be specified. This is expected to be modified in future versions"
 
-**PROJECT_NAME** = the name for this project. This will create a folder under the folder where Praeda was executed to contain logs and export info.
+**IGNORE_PORTS** = Comma separated list of ports to ignore when ingesting a .gnmap file
+
+**PROJECT_NAME** = the name for this project. This will create a folder under the folder where Praeda was executed to contain logs and export info
 
 **OUTPUT_LOG_FILE** = name of log file for data output
 
 
 **SYNTAX FOR GNMAP FILE INPUT:**
-Praeda.py -g GNMAP_FILE -j PROJECT_NAME -l OUTPUT_LOG_FILE
+Praeda.py -g GNMAP_FILE -j PROJECT_NAME -l OUTPUT_LOG_FILE -i IGNORE_PORTS
 
 **SYNTAX FOR IP  CIDR/CIDR FILE LIST:**
 Praeda.py -t CIDR or CIDR_FILE -p TCP_PORT -j PROJECT_NAME -l OUTPUT_LOG_FILE -s SSL
 
 **SYNTAX FOR IP TARGET FILE LIST:**
 Praeda.py -t TARGET_FILE -p TCP_PORT -j PROJECT_NAME -l OUTPUT_LOG_FILE -s SSL 
+
+**SYNTAX FOR RESUME SCAN:**
+Praeda.py -r true -j PROJECT_NAME -l OUTPUT_LOG_FILE -s SSL
+(Project name and output log file must match parameters given in the original scan.)
  
 **Examples:**
 
-./Praeda.py -g scan1.gnmap -j acmewidget -l results
+./Praeda.py -g scan1.gnmap -j acmewidget -l results -i 565,8080
 
 ./Praeda.py  -n 10.10.10.0/24 -p 80  -j project1 -l data-file
 
@@ -79,6 +91,8 @@ Praeda.py -t TARGET_FILE -p TCP_PORT -j PROJECT_NAME -l OUTPUT_LOG_FILE -s SSL
 ./Praeda.py  -t target.txt -p 80  -j project1 -l data-file
 
 ./Praeda.py  -t target.txt -p 443  -j project1 -l data-file -s SSL
+
+./Praeda.py -r true -j project1 -l data-file -s SSL
 
 The results will create a folder called project1 and save all information in that folder. Also this will write out the following data.
 targetdata.txt  : This is the parsed results of .gnmap file
