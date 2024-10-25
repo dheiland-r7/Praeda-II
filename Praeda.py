@@ -86,6 +86,7 @@ if (options["g"] and (options["t"] or options["p"])) or (options["g"] and (optio
     print("For GNMAP input:  Praeda.py -g GNMAP_FILE -i IGNORE_PORTS -j PROJECT_NAME -l OUTPUT_LOG_FILE")
     print("For target input: Praeda.py -t TARGET_FILE -p TCP_PORT -j PROJECT_NAME -l OUTPUT_LOG_FILE -s SSL")
     print("For CIDR input:   Praeda.py -n CIDR or CIDR_FILE -p TCP_PORT -j PROJECT_NAME -l OUTPUT_LOG_FILE -s SSL")
+    print("To resume a prevous job:  praeda.py -r true -j PROJECT_NAME -l OUTUT_LOG_FILE -s SSL")
     sys.exit(1)
 elif options["g"] and (not options["j"] or not options["l"]):
     print("Error block 2")
