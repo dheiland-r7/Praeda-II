@@ -37,6 +37,7 @@ urllib3.disable_warnings(InsecureRequestWarning)
 # Set Constants
 SOCKET_IS_UP = 0
 SOCKET_IS_DOWN = 1
+SOCKET_IS_IGNORED = 2
 REQUEST_TIMEOUT = 5
 WAIT_FOR_RST = 1
 
@@ -59,6 +60,8 @@ options = {
     "j": "",
     "l": "",
     "s": "",
+    "i": "",
+    "r": "",
 }
 
 # Parse Command Line Arguments
@@ -77,33 +80,57 @@ while i < len(args):
 # Validate Command Line Arguments
 if (options["g"] and (options["t"] or options["p"])) or (options["g"] and (options["n"] or options["p"])) or (
         options["g"] and options["n"]):
+    print("Error block 1")
     print("-g and -t or -p options are not allowed at the same time")
     print("The correct options syntax are:")
-    print("For GNMAP input:  Praeda.py -g GNMAP_FILE -j PROJECT_NAME -l OUTPUT_LOG_FILE")
+    print("For GNMAP input:  Praeda.py -g GNMAP_FILE -i IGNORE_PORTS -j PROJECT_NAME -l OUTPUT_LOG_FILE")
     print("For target input: Praeda.py -t TARGET_FILE -p TCP_PORT -j PROJECT_NAME -l OUTPUT_LOG_FILE -s SSL")
     print("For CIDR input:   Praeda.py -n CIDR or CIDR_FILE -p TCP_PORT -j PROJECT_NAME -l OUTPUT_LOG_FILE -s SSL")
     sys.exit(1)
 elif options["g"] and (not options["j"] or not options["l"]):
+    print("Error block 2")
     print("Options -j and -l are both required when using option -g")
     print("The correct options syntax for using gnmap as input is:")
-    print("praeda.py -g GNMAP_FILE -j PROJECT_NAME -l OUTPUT_LOG_FILE")
+    print("praeda.py -g GNMAP_FILE -i IGNORE_PORTS -j PROJECT_NAME -l OUTPUT_LOG_FILE")
     sys.exit(1)
+elif options["n"] and (options["i"]):
+    print("Error block 3")
+    print("Option -i can only be used with -g")
+    print("The correct options syntax for using network CIDR or CIDR list file as input is:")
+    print("For CIDR input: praeda.py -n CIDR or CIDR_FILE -p TCP_PORT -j PROJECT_NAME -l OUTPUT_LOG_FILE -s SSL")
+elif options["t"] and (options["i"]):
+    print("Error block 4")
+    print("Option -i can only be used with -g")
+    print("The correct options syntax for using target ip list file as input is:")
+    print("praeda.py -t TARGET_FILE -p TCP_PORT -j PROJECT_NAME -l OUTPUT_LOG_FILE -s SSL")
 elif options["n"] and (not options["p"] or not options["j"] or not options["l"]):
+    print("Error block 5")
     print("Options -p, -j, and -l are all required when using option -n")
     print("The correct options syntax for using network CIDR or CIDR list file as input is:")
     print("For CIDR input: praeda.py -n CIDR or CIDR_FILE -p TCP_PORT -j PROJECT_NAME -l OUTPUT_LOG_FILE -s SSL")
     sys.exit(1)
 elif options["t"] and (not options["p"] or not options["j"] or not options["l"]):
+    print("Error block 6")
     print("Options -p, -j, and -l are all required when using option -t")
     print("The correct options syntax for using target ip list file as input is:")
     print("praeda.py -t TARGET_FILE -p TCP_PORT -j PROJECT_NAME -l OUTPUT_LOG_FILE -s SSL")
     sys.exit(1)
-elif not options["g"] and not options["t"] and not options["n"]:
+elif (options["r"] and (options["t"] or options["g"] or options["n"])) or (options["r"] and not options["j"] and not options["l"]):
+    print("Error block 7")
+    print("Option -r should only be used to resume an incomplete scan.")
+    print("The only options appropriate for use with -r are -j, -l and -s. (-s is optional)")
+    print("To resume an unfinished session:  praeda.py -r true -j PROJECT_NAME -l TARGET_FILE -s SSL")
+    print("PROJECT_NAME must match the project name used in the original scan. TARGET_FILE should match")
+    print("the name of the output file requested during the original job run.")
+    sys.exit(1)
+elif not options["g"] and not options["t"] and not options["n"] and not options["r"]:
+    print("Error block 8")
     print("Required options are missing")
     print("The correct options syntax are:")
-    print("For GNMAP input:  praeda.py -g GNMAP_FILE -j PROJECT_NAME -l OUTPUT_LOG_FILE")
+    print("For GNMAP input:  praeda.py -g GNMAP_FILE -i IGNORE_PORTS -j PROJECT_NAME -l OUTPUT_LOG_FILE")
     print("For target input: praeda.py -t TARGET_FILE -p TCP_PORT -j PROJECT_NAME -l OUTPUT_LOG_FILE -s SSL")
     print("For CIDR input:   praeda.py -n CIDR or CIDR_FILE -p TCP_PORT -j PROJECT_NAME -l OUTPUT_LOG_FILE -s SSL")
+    print("To resume a prevous job:  praeda.py -r true -j PROJECT_NAME -l OUTUT_LOG_FILE -s SSL")
     sys.exit(1)
 
 # Read Data File
@@ -125,17 +152,19 @@ if not os.path.exists(options["j"]):
 #-----------------------------------------------subroutines------------------------------------------------------#
 
 # Check if port is open and contains http
-def check_port(target, ports):
+def check_port(target, ports, ignore_ports=""):
     status = SOCKET_IS_DOWN
-    
-    try:
-        sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        sock.settimeout(REQUEST_TIMEOUT)
-        sock.connect((target, int(ports)))
-        status = SOCKET_IS_UP
-        sock.close()
-    except Exception:
-        pass
+    if ports in ignore_ports:
+        return SOCKET_IS_IGNORED
+    else:
+        try:
+            sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            sock.setdefaulttimeout(0)
+            sock.connect((target, int(ports)))
+            status = SOCKET_IS_UP
+            sock.close()
+        except Exception:
+            pass
     return status
 
 
@@ -197,6 +226,27 @@ def cidr_parse(CIDRFIL, OUTPUT):
         print(f"Error: {str(e)}")
     return
 
+def parse_output_files(project_folder, output_file):
+    if (os.path.exists("./" + project_folder + "/" + output_file + "-WebHost.txt") and os.path.exists("./" + project_folder + "/targetdata.txt")):
+        print("Files exist! Resuming session.")
+        with open("./" + project_folder + "/" + output_file + "-WebHost.txt") as f:
+            allDoneTargets = f.readlines()
+            lastTargetFields = allDoneTargets[len(allDoneTargets) - 1].split(':')
+            lastTarget = lastTargetFields[0] + ":" + lastTargetFields[1]
+            print(lastTarget)
+            with open("./" + project_folder + "/targetdata.txt") as t:
+                allTargets = t.readlines()
+                for line in allTargets:
+                    if lastTarget in line:
+                        lastTarget = allTargets.index(line)
+                        break
+#            lastTarget = allTargets[lastTargetIndex]
+            print(lastTarget)
+        return lastTarget
+    else:
+        print("Error! Can't resume. Necessary files don't exist.")
+    sys.exit(1)
+
 # snmp device identifier routine
 def snmp_get(target):
     # Create an SNMP GET request
@@ -241,9 +291,11 @@ class SSLAdapter(HTTPAdapter):
 
 #--------------------------------------------END--Subroutines---------------------------------------------------#
 
+IGNORE_PORTS = ""
 # GNMAP Parse options routine call
 if options["g"]:
     GNMAPFILE = options["g"]
+    IGNORE_PORTS = options["i"].strip().split(',')
     OUTPUT = options["j"]
     NAME = options["l"]
     gnmap_parse(GNMAPFILE, OUTPUT)
@@ -266,12 +318,23 @@ elif options["n"]:
 else:
     FILE = os.path.join(options["j"], "targetdata.txt")
 
+NEXT_TARGET = 0
+
+# Resume option. Parse output files from previous run and pick up where you left off
+if options["r"]:
+    PROJECT_FOLDER = options["j"]
+    NAME = options["l"]
+    LAST_TARGET = parse_output_files(PROJECT_FOLDER, NAME)
+    NEXT_TARGET = LAST_TARGET + 1
+
+
 OUTPUT = options["j"]
-LOGFILE = options["l"]
+LOGFILE = options["l"] 
 
 # Read Target Input
 with open(FILE, 'r') as f:
-    targets = f.read().splitlines()
+    fileTargets = f.read().splitlines()
+    targets = fileTargets[NEXT_TARGET:len(fileTargets)-1]
 
 for TARGET in targets:
     if options["g"]:
@@ -283,12 +346,24 @@ for TARGET in targets:
     elif options["n"]:
         #TARGET = TARGET.strip()
         TARGET, PORTS = TARGET.split(':')
+    elif options["r"]:
+        IGNORE_PORTS = options["i"].strip().split(',')
+        if (len(TARGET.split(':')) == 3):
+            TARGET, PORTS, N = TARGET.split(':')
+        else:
+            TARGET, PORTS = TARGET.split(':')
     
 # Call Port Check Routine
-    status = check_port(TARGET, PORTS)
+    if options["i"]:
+        status = check_port(TARGET, PORTS, IGNORE_PORTS)
+    else:
+        status = check_port(TARGET, PORTS)
     
     if status == SOCKET_IS_DOWN:
         print(f"{TARGET}:{PORTS}:NO ANSWER RETURNED")
+    elif status == SOCKET_IS_IGNORED:
+        print(f"{TARGET}:{PORTS}:IGNORED BY REQUEST")
+
 
 # Perform HTTP request to gather title/server data and call SNMP routin for gather SNMP device name data
     else:
@@ -300,7 +375,7 @@ for TARGET in targets:
         # Make an HTTP request
             url = f"http{web}://{TARGET}:{PORTS}/"  
             #response = requests.get(url, verify=False)  # `verify=False` skips SSL certificate verification. 
-            response = session.get(url, verify=False)  # `verify=False` skips SSL certificate verification. 
+            response = session.get(url, verify=False, timeout=3)  # `verify=False` skips SSL certificate verification. 
 
         # Check if the request was successful
             if response.status_code == 200:
@@ -317,7 +392,7 @@ for TARGET in targets:
                 print(f"{TARGET}:{PORTS}:{d1}:{d2}:{d3}")
 
                 with open(f"{OUTPUT}/{LOGFILE}-WebHost.txt", 'a') as webFile:
-                    webFile.write(f"\n{TARGET}:{PORTS}:{d1}:{d2}:{d3}\n")
+                    webFile.write(f"{TARGET}:{PORTS}:{d1}:{d2}:{d3}\n")
 
                 for DataEntry in raw_data:
                     values = DataEntry.split('|')
