@@ -30,6 +30,17 @@ Also, if during operation you receive SSL error **"[SSL: UNSAFE_LEGACY_RENEGOTIA
 
 The recommended soluton for the above issues is to install and run Praeda-II on a Kali image, which has the legacy renegotiation enabled, or do the above on a VM image and not your primary machine.
 
+** Time Out Settings **
+To modify the timeout setting to speed up if running on a bear metal Kali image. You can change the global variable REQUEST_TIME to lower number , if seeing high number of timeout change the setting to aa higher number.
+
+Also if running Praeda on a bear metal install you may be able to change the following setting for a quick default time:
+From:
+            # sock.setdefaulttimeout(0)
+            sock.settimeout(REQUEST_TIMEOUT)
+To:
+            sock.setdefaulttimeout(0)
+            # sock.settimeout(REQUEST_TIMEOUT)
+
 **PRAEDA OPTIONS:**
 
 -g GNMAP_FILE
