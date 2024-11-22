@@ -9,7 +9,7 @@
 #                                                 
 #   Deral (Percent_x) Heiland - Rapid7 
 #   Copywrite 2023, 2024
-#   PRAEDA II version 1.1b
+#   PRAEDA II version 1.2b
 ###################################################
 
 
@@ -38,7 +38,7 @@ urllib3.disable_warnings(InsecureRequestWarning)
 SOCKET_IS_UP = 0
 SOCKET_IS_DOWN = 1
 SOCKET_IS_IGNORED = 2
-REQUEST_TIMEOUT = 5
+REQUEST_TIMEOUT = 4
 WAIT_FOR_RST = 1
 
 # Set Variables
@@ -160,7 +160,8 @@ def check_port(target, ports, ignore_ports=""):
     else:
         try:
             sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-            sock.setdefaulttimeout(0)
+            # sock.setdefaulttimeout(0)
+            sock.settimeout(REQUEST_TIMEOUT)
             sock.connect((target, int(ports)))
             status = SOCKET_IS_UP
             sock.close()
@@ -376,7 +377,7 @@ for TARGET in targets:
         # Make an HTTP request
             url = f"http{web}://{TARGET}:{PORTS}/"  
             #response = requests.get(url, verify=False)  # `verify=False` skips SSL certificate verification. 
-            response = session.get(url, verify=False, timeout=3)  # `verify=False` skips SSL certificate verification. 
+            response = session.get(url, verify=False, timeout=(REQUEST_TIMEOUT))  # `verify=False` skips SSL certificate verification. 
 
         # Check if the request was successful
             if response.status_code == 200:
