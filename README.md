@@ -34,7 +34,7 @@ The recommended soluton for the above issues is to install and run Praeda-II on 
 
 To modify the timeout setting to speed up Praeda-ii. You can change the global variable REQUEST_TIME= to lower number , if seeing high number of timeouts change this setting to a higher number.
 
-Also if running Praeda on a bear metal install you may be able to change the following setting for a quick default time:
+Also if running Praeda on a bare metal install you may be able to change the following setting for a quick default time:
 
 From:
             # sock.setdefaulttimeout(0)
