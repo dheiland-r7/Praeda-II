@@ -39,6 +39,7 @@ Also if running Praeda on a bare metal install you may be able to change the fol
 From:
             # sock.setdefaulttimeout(0)
             sock.settimeout(REQUEST_TIMEOUT)
+
 To:
             sock.setdefaulttimeout(0)
             # sock.settimeout(REQUEST_TIMEOUT)
