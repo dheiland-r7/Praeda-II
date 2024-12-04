@@ -36,13 +36,20 @@ To modify the timeout setting to speed up Praeda-ii. You can change the global v
 
 Also if running Praeda on a bare metal install you may be able to change the following setting for a quick default time:
 
-From:
+  **From:**
+  
             # sock.setdefaulttimeout(0)
+            
             sock.settimeout(REQUEST_TIMEOUT)
 
-To:
+
+  **To:**
+  
             sock.setdefaulttimeout(0)
+            
             # sock.settimeout(REQUEST_TIMEOUT)
+
+
 
 **PRAEDA OPTIONS:**
 
