@@ -121,7 +121,7 @@ $LOGFILE-WebHost.txt : This is an output of all webservers querried listing IP:P
 $LOGFILE.log : This file will contain the results of the modules executed.
 RAW extract data including: Clones, Backups, Address Books ect...
 
-
+-
 
 ------------------------Information on logfile output structure-------------------------------<br/>
 Examples:<br/>
