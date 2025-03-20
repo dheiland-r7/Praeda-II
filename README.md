@@ -136,6 +136,7 @@ Field 2: Data type<br/>
 &emsp;2: Password data ( Email, Active Directory, FTP , Ect...)<br/>
 &emsp;3: Extracted file data ( None Account Information such as print jobs or documents)<br/>
 &emsp;4: Address books<br/>
+&emsp;5: Finger Print<br/>
 Field 3: Description<br/>
 Field 4: Device IP Address<br/>
 Field 5: Device Port Number<br/>
