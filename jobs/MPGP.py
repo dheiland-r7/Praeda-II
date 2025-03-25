@@ -17,7 +17,8 @@ def MPGP(TARGET, PORTS, web, OUTPUT, LOGFILE, data1):
     try:
         with open(f'{OUTPUT}/{LOGFILE}.log', 'a') as logFile:
 
-            logFile.write(f"Device validated on network with Finger Print of {data1}\n")
+            # logFile.write(f"Device validated on network with Finger Print of {data1}\n")
+            logFile.write(f"\033[93mIDENTIFIED\033[0m:5:Finger Printed:{TARGET}:{PORTS}:{data1}:::::\n")
             print(f"MFP device validated on network with Finger Print of {data1}\n")
 
     except Exception as e:
