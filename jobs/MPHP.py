@@ -53,7 +53,8 @@ def MPHP(TARGET, PORTS, web, OUTPUT, LOGFILE, data1):
             if snmp_data:
                 # Extract the model from SNMP data
                 device_model = extract_device_model(snmp_data)
-                logFile.write(f"Device validated on network with Finger Print of {device_model}\n")
+                # logFile.write(f"Device validated on network with Finger Print of {device_model}\n")
+                logFile.write(f"\033[93mIDENTIFIED\033[0m:5:Finger Printed:{TARGET}:{PORTS}:{device_model}:::::\n")
                 print(f"MFP device validated on network with Finger Print of {device_model}\n")
             else:
                 logFile.write("Failed to retrieve SNMP data.\n")
