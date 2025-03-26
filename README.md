@@ -3,23 +3,40 @@
 
 This file is used to list a few config items and recommendations. Also some basic Praeda syntax. 
 
-Required Python modules:  
+Required Python modules extracted from source using pipreqs:  
   ```
-  bs4==0.0.2
-  netaddr==1.3.0
-  pyasn1==0.5.1
-  pysnmp==4.4.12
-  urllib3==2.2.3
+beautifulsoup4==4.13.3
+colorama==0.4.6
+ConfigParser==7.2.0
+cryptography==44.0.2
+docutils==0.21.2
+filelock==3.18.0
+HTMLParser==0.0.2
+ipython==8.12.3
+ipywidgets==8.1.5
+keyring==25.6.0
+netaddr==1.3.0
+Pillow==11.1.0
+protobuf==6.30.1
+pyOpenSSL==25.0.0
+pysnmp==4.4.12
+redis==5.2.1
+Sphinx==8.2.3
+thread==2.0.5
+urllib3_secure_extra==0.1.0
+pyasyncore==1.0.4
+pyasn1==0.5.1
+urllib3==2.2.3
 ```
 
-To install, it's highly recommended to use a Python 3.10 or higher virtual environment to avoid version dependency conflicts.
+To install, it's highly recommended to use a Python 3.12 or higher virtual environment to avoid version dependency conflicts.
 
 ```
 python -m venv path/to/virtual/environment
 source /path/to/virtual/environment/bin/activate
 git clone https://github.com/dheiland-r7/Praeda-II
 cd Praeda-II
-pipx install -r requirements.txt
+pip install -r requirements.txt
 ```
 
 Because of varios SSL/TLS and DH key length issues encountered with MFP devices it is highly recommended that this tool be installed and run on a kali image. Kali images have a properly compiled openssl that supports out of compliance SSL/TLS and DH key and certificates.
