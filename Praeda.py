@@ -20,7 +20,8 @@ import socket
 import time
 import subprocess
 from bs4 import BeautifulSoup
-from pysnmp.entity.rfc3413.oneliner import cmdgen
+# from pysnmp.entity.rfc3413.oneliner import cmdgen  THIS IS BEING REMOVED
+from pysnmp.hlapi import *
 from netaddr import IPNetwork, IPAddress
 import urllib3
 from urllib3.exceptions import InsecureRequestWarning
