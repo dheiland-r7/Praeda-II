@@ -337,7 +337,7 @@ LOGFILE = options["l"]
 # Read Target Input
 with open(FILE, 'r') as f:
     fileTargets = f.read().splitlines()
-    targets = fileTargets[NEXT_TARGET:len(fileTargets)-1]
+    targets = fileTargets[NEXT_TARGET:len(fileTargets)]
 
 for TARGET in targets:
     if options["g"]:
