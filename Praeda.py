@@ -413,7 +413,8 @@ for TARGET in targets:
                         for i in range(3, num):
                             if values[i] != '':
                                 with open(f"{OUTPUT}/{LOGFILE}.log", 'a') as logFile:
-                                    logFile.write(f"\n{TARGET}:{PORTS}:{data1}:{data2}:\n")
+                                    logFile.write(f"\n")
+                                    #logFile.write(f"\n{TARGET}:{PORTS}:{data1}:{data2}:\n")
                                 job = values[i]
                                 module = __import__(f'jobs.{job}', fromlist=[job])
                                 job_func = getattr(module, job)
