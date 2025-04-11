@@ -14,11 +14,11 @@ def MP0018(target, ports, web, output, logfile, data1):
     # OIDs to check
     ldap_server_oid = '1.3.6.1.4.1.2435.2.4.3.2435.5.19.12.1.2.1'     
     ldap_oids = {
-        "ldap_base_dn": '1.3.6.1.4.1.2435.2.4.3.2435.5.19.12.1.5.1',
-        "ldap_service": '1.3.6.1.4.1.2435.2.4.3.2435.5.19.12.1.4.1',
-        "ldap_auth_method": '1.3.6.1.4.1.2435.2.4.3.2435.5.19.12.1.3.1'
+        "ldap_username": '1.3.6.1.4.1.2435.2.4.3.2435.5.19.12.1.5.1',
+        "ldap_auth_method": 'iso.3.6.1.4.1.2435.2.4.3.2435.5.19.12.1.4.1'
         }
-
+    auth_methods = ['Anonymous','Simple', 'Kerberos', 'NTLMv2']
+    
     # Check ldap_server first
     ldap_server_value = get_snmp_data(ldap_server_oid, target)
 
@@ -36,8 +36,14 @@ def MP0018(target, ports, web, output, logfile, data1):
                     else:
                         ldap_values.append('N/A')  # In case no data is returned
         
+                # Brother reports the auth type as an integer, so convert it to an actual name.
+                auth_type = 'Unknown'
+
+                if ldap_values[1].isdigit() and (int(ldap_values[1]) - 1) >= 0 and (int(ldap_values[1]) - 1) < len(auth_methods):
+                    auth_type = auth_methods[int(ldap_values[1]) - 1]
+
                 print(f"\033[91mSUCCESS\033[0m: The Brother  MFP {target} appears to be configured for LDAP services:")
-                logFile.write(f"\033[91mSUCCESS\033[0m:5:The LDAP service is enabled:{target}:{ports}:{data1}:LDAP User Name {ldap_values[1]}:LDAP Auth Type {ldap_values[2]}:::auxiliary/server/ldap\n")
+                logFile.write(f"\033[91mSUCCESS\033[0m:5:The LDAP service is enabled:{target}:{ports}:{data1}:LDAP User Name {ldap_values[0]}:LDAP Auth Type {auth_type}:::auxiliary/server/ldap\n")
 
 
             else:
@@ -86,6 +92,9 @@ def is_valid_ip(ldap_server_value):
         if len(parts) == 5:
             ip = '.'.join(parts[:4])
             port = parts[4]
+        elif len(parts) == 4:
+            ip = '.'.join(parts[:4])
+            port = None
         else:
             print(f"Invalid format: {ldap_server_value}")
             return False
@@ -98,7 +107,7 @@ def is_valid_ip(ldap_server_value):
             return False
 
         # Optionally, validate the port (e.g., check it's within a valid range)
-        if not port.isdigit() or not (0 < int(port) <= 65535):
+        if port != None and(not port.isdigit() or not (0 < int(port) <= 65535)):
             print(f"Invalid port: {port}")
             return False
 
