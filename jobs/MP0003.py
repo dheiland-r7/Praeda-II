@@ -22,10 +22,10 @@ def MP0003(TARGET, PORTS, web, OUTPUT, LOGFILE, data1):
             if result is not None:
                 if result == 0:
                     print("FAILED: Unauthenticated Remote Control is Disabled")
-                    logFile.write(f"FAILED:0:Unauthenticated Remote Control:{TARGET}:{PORTS}:{data1}xxx::::Disabled:\n")
+                    logFile.write(f"FAILED:0:Unauthenticated Remote Control:{TARGET}:{PORTS}:{data1}xxx::::Disabled:")
                 elif result == 3:
                     print("\033[91mSUCCESS\033[0m: Unauthenticated Remote Control is ENABLED")
-                    logFile.write(f"\033[91mSUCCESS\033[0m:0:Unauthenticated Remote Control:{TARGET}:{PORTS}:{data1}xxx::::ENABLED:\n")
+                    logFile.write(f"\033[91mSUCCESS\033[0m:0:Unauthenticated Remote Control:{TARGET}:{PORTS}:{data1}xxx::::ENABLED:")
                 else:
                     print("Status of Remote Control is Unknown")
             else:
