@@ -46,7 +46,7 @@ def MP0004(target, ports, web, output, logfile, data1):
             # Checking the response for specific content indecating valid password
             if 'document.cookie="adm=AS_COU"' in response.text:
                 print("\033[91mSUCCESS\033[0m: The Konica devices Admin password is 12345678\n")
-                logFile.write(f"\033[91mSUCCESS\033[0m:1:Konica Device credential:{target}:{ports}:{data1}:AdminAdmin:12345678:::\n")
+                logFile.write(f"\033[91mSUCCESS\033[0m:1:Konica Device credential:{target}:{ports}:{data1}:AdminAdmin:12345678:::")
 
 
 
@@ -100,7 +100,7 @@ def MP0004(target, ports, web, output, logfile, data1):
                 print("Admin is currently logged in on this Konica device  please retest at a later time.\n")
             elif "<Item Code=\"Err_2\">CommonLoginError</Item>" in response.text:
                 print("FAIL: The Admin password has been changed on this Konica device.\n")
-                logFile.write(f"FAIL:1:Konica device's admin password could not be determined:{target}:{ports}:{data1}:AdminAdmin:?:::\n")
+                logFile.write(f"FAIL:1:Konica device's admin password could not be determined:{target}:{ports}:{data1}:AdminAdmin:?:::")
             else:
                 print("The response does not contain expected data.")
 
