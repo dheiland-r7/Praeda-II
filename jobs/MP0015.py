@@ -41,7 +41,7 @@ def MP0015(target, ports, web, output, logfile, data1):
                         ldap_values.append('N/A')  # In case no data is returned
         
                 print(f"\033[91mSUCCESS\033[0m: The Xerox MFP {target} appears to be configured for LDAP services:")
-                logFile.write(f"\033[91mSUCCESS\033[0m:5:The LDAP service is enabled:{target}:{ports}:{data1}:LDAP User Name {ldap_values[1]}:LDAP Auth Type {ldap_values[2]}:::auxiliary/server/ldap\n")
+                logFile.write(f"\033[91mSUCCESS\033[0m:5:The LDAP service is enabled:{target}:{ports}:{data1}:LDAP User Name {ldap_values[1]}:LDAP Auth Type {ldap_values[2]}:::auxiliary/server/ldap")
 
 
             else:
