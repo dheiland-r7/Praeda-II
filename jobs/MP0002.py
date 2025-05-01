@@ -75,14 +75,14 @@ def MP0002(TARGET, PORTS, web, OUTPUT, LOGFILE, data1):
                     with open(f'./{OUTPUT}/{TARGET}_{PORTS}_{file_name}', 'a') as file:
                         file.write(new_response.text)
                     print(f"\033[91mSUCCESS\033[0m: Xerox Address book CSV file saved as {TARGET}_{PORTS}_{file_name}\n")
-                    logFile.write(f"\033[91mSUCCESS\033[0m:4:Xerox Address book:{TARGET}:{PORTS}:{data1}xxx:::{TARGET}_{PORTS}_{file_name}::\n")
+                    logFile.write(f"\033[91mSUCCESS\033[0m:4:Xerox Address book:{TARGET}:{PORTS}:{data1}xxx:::{TARGET}_{PORTS}_{file_name}::")
 
                 else:
                     print(f"ABORTED: Xerox Address book file is empty, not saved.\n")
                     logFile.write(f"ABORTED:4:Xerox Address book file is empty, not saved:{TARGET}:{PORTS}:{data1}xxx:::::\n")
             else:
                 print(f"FAILED: to fetch CSV data. Status code: {new_response.status_code}\n")
-                logFile.write(f"FAILED:4:Xerox Address book file recovery failed:{TARGET}:{PORTS}:{data1}xxx:::::\n")
+                logFile.write(f"FAILED:4:Xerox Address book file recovery failed:{TARGET}:{PORTS}:{data1}xxx:::::")
     except Exception as e:
         print(f"Failed to open output file {OUTPUT}\nError: {str(e)}")
 
