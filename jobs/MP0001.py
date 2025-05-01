@@ -28,13 +28,13 @@ def MP0001(target, ports, web, output, logfile, data1):
                     serial_base64 = encode_password(serial)
                     if try_login(target, ports, web, "YWRtaW4=", serial_base64, output, logfile):
                         print(f"\033[91mSUCCESS\033[0m: The Xerox device's Admin password is the serial number {serial}\n")
-                        logFile.write(f"\033[91mSUCCESS\033[0m:1:Xerox Device credential:{target}:{ports}:{data1}xxx:Admin:{serial}:::\n")
+                        logFile.write(f"\033[91mSUCCESS\033[0m:1:Xerox Device credential:{target}:{ports}:{data1}xxx:Admin:{serial}:::")
                     else:
                         print("FAIL: Neither default password nor serial number worked.\n")
-                        logFile.write(f"FAIL:1:Xerox device's admin password could not be determined:{target}:{ports}:{data1}xxx:Admin:?:::\n")
+                        logFile.write(f"FAIL:1:Xerox device's admin password could not be determined:{target}:{ports}:{data1}xxx:Admin:?:::")
                 else:
                     print("FAIL: Could not retrieve serial number via SNMP.\n")
-                    logFile.write(f"FAIL:1:Could not retrieve serial number via SNMP:{target}:{ports}:{data1}xxx:::::\n")
+                    logFile.write(f"FAIL:1:Could not retrieve serial number via SNMP:{target}:{ports}:{data1}xxx:::::")
     except Exception as e:
         print(f"Failed to open output file {output}\nError: {str(e)}")
 
