@@ -68,8 +68,8 @@ def MP0002(TARGET, PORTS, web, OUTPUT, LOGFILE, data1):
                             smb_enabled = True
                             break  # No need to check further, we found an entry with SMB enabled
                     if smb_enabled:
-                        print(f"\033[91mSUCCESS\033[0m:SMB is enabled in Xerox Address book")
-                        logFile.write(f"\033[91mSUCCESS\033[0m:0:SMB is enabled in Xerox Address book:{TARGET}:{PORTS}:{data1}xxx:::::\n")
+                        print(f"\033[91mSUCCESS\033[0m:SMB Scan is enabled in Xerox Address book")
+                        logFile.write(f"\033[91mSUCCESS\033[0m:0:SMB Scan is enabled in Xerox Address book:{TARGET}:{PORTS}:{data1}xxx:::::\n")
 
                     # Save the CSV file to the file system
                     with open(f'./{OUTPUT}/{TARGET}_{PORTS}_{file_name}', 'a') as file:
