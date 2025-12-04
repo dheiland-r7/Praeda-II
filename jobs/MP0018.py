@@ -1,31 +1,42 @@
 # Brother validate LDAP is enabled and current settings
 ######################################################
-#                 PRAEDA II Module #MP0016           #
-#                  Copyright (C) 2024                #
-#              Deral 'percent_x' Heiland             #
+#                 PRAEDA II Module #MP0018
+#                  Copyright (C) 2024
+#              Deral 'percent_x' Heiland
 ######################################################
 
-from pysnmp.hlapi import *
+import asyncio
 import ipaddress
+
+# PySNMP 7.x asyncio HLAPI (PEP8 names)
+from pysnmp.hlapi.v3arch.asyncio import (
+    SnmpEngine,
+    CommunityData,
+    UdpTransportTarget,
+    ContextData,
+    ObjectType,
+    ObjectIdentity,
+    get_cmd,
+)
 
 def MP0018(target, ports, web, output, logfile, data1):
     """ Main function to perform SNMP checks for Brother LDAP configuration. """
-    
+
     # OIDs to check
-    ldap_server_oid = '1.3.6.1.4.1.2435.2.4.3.2435.5.19.12.1.2.1'     
+    ldap_server_oid = '1.3.6.1.4.1.2435.2.4.3.2435.5.19.12.1.2.1'
     ldap_oids = {
         "ldap_username": '1.3.6.1.4.1.2435.2.4.3.2435.5.19.12.1.5.1',
         "ldap_auth_method": 'iso.3.6.1.4.1.2435.2.4.3.2435.5.19.12.1.4.1'
-        }
+    }
     auth_methods = ['Anonymous','Simple', 'Kerberos', 'NTLMv2']
-    
+
     # Check ldap_server first
     ldap_server_value = get_snmp_data(ldap_server_oid, target)
 
     # Try to open output file for logging
     try:
         with open(f'{output}/{logfile}.log', 'a') as logFile:
-            
+
             if ldap_server_value and is_valid_ip(ldap_server_value):
                 # Gather the values of the other OIDs
                 ldap_values = []
@@ -35,57 +46,80 @@ def MP0018(target, ports, web, output, logfile, data1):
                         ldap_values.append(value)
                     else:
                         ldap_values.append('N/A')  # In case no data is returned
-        
-                # Brother reports the auth type as an integer, so convert it to an actual name.
+
+                # Brother reports the auth type as an integer, so convert it to a name.
                 auth_type = 'Unknown'
+                if ldap_values[1].isdigit():
+                    idx = int(ldap_values[1]) - 1
+                    if 0 <= idx < len(auth_methods):
+                        auth_type = auth_methods[idx]
 
-                if ldap_values[1].isdigit() and (int(ldap_values[1]) - 1) >= 0 and (int(ldap_values[1]) - 1) < len(auth_methods):
-                    auth_type = auth_methods[int(ldap_values[1]) - 1]
-
-                print(f"\033[91mSUCCESS\033[0m: The Brother  MFP {target} appears to be configured for LDAP services:")
-                logFile.write(f"\033[91mSUCCESS\033[0m:5:The LDAP service is enabled:{target}:{ports}:{data1}:LDAP User Name {ldap_values[0]}:LDAP Auth Type {auth_type}:::auxiliary/server/ldap\n")
-
-
+                print(f"\033[91mSUCCESS\033[0m: The Brother MFP {target} appears to be configured for LDAP services:")
+                logFile.write(
+                    f"\033[91mSUCCESS\033[0m:5:The LDAP service is enabled:{target}:{ports}:{data1}:"
+                    f"LDAP User Name {ldap_values[0]}:LDAP Auth Type {auth_type}:::auxiliary/server/ldap\n"
+                )
             else:
-                print(f"FAILURE:  The brother MFP {target} does not appear to have LDAP services configured ")
-                # logFile.write(f"FAILURE: ldap_server OID {ldap_server_oid} returned no configured IP data")
-                logFile.write(f"\033[91mFAILURE\033[0m:5:The LDAP services does not appear to be configured:{target}:{ports}:{data1}:::::\n")
+                print(f"FAILURE:  The Brother MFP {target} does not appear to have LDAP services configured ")
+                logFile.write(
+                    f"\033[91mFAILURE\033[0m:5:The LDAP services does not appear to be configured:"
+                    f"{target}:{ports}:{data1}:::::\n"
+                )
 
     except Exception as e:
         print(f"Failed to make connection to URL \nError: {str(e)}")
 
 
-def get_snmp_data(oid, ip, community='public'):
-    """ Function to perform SNMP GET on an OID. """
-    iterator = getCmd(
-        SnmpEngine(),
-        CommunityData(community),
-        UdpTransportTarget((ip, 161)),
-        ContextData(),
-        ObjectType(ObjectIdentity(oid))
-    )
+# ---------------------------- SNMP helpers (PySNMP 7.x async; community='public') ----------------------------
 
-    error_indication, error_status, error_index, var_binds = next(iterator)
-
-    if error_indication:
-        print(f'Error: {error_indication}')
-        return None
-    elif error_status:
-        print(f'Error: {error_status.prettyPrint()} at {error_index and var_binds[int(error_index) - 1] or "?"}')
-        return None
-    else:
-        for var_bind in var_binds:
-            _, value = var_bind
-            return str(value)
-
-
-
-#Function to validate the IP address in the Xerox OID is a valid address and not default of 0.0.0.0
-
-def is_valid_ip(ldap_server_value):
-    """ Function to validate the IP address and ensure it's not the default 0.0.0.0. """
+async def _snmp_get_once(ip: str, oid: str, mp_model: int, timeout: float = 2.0, retries: int = 1) -> str | None:
+    """
+    Perform a single SNMP GET for the given OID using PySNMP 7.x asyncio HLAPI.
+    mp_model: 1=v2c, 0=v1
+    Returns the value string on success, or None on failure.
+    """
     try:
-        # The OID might return something like '192.168.4.56.389', so we need to handle that
+        eng = SnmpEngine()
+        # IMPORTANT: async transport factory is required in pysnmp 7.x
+        transport = await UdpTransportTarget.create((ip, 161), timeout=timeout, retries=retries)
+        iterator = get_cmd(
+            eng,
+            CommunityData('public', mpModel=mp_model),  # fixed community
+            transport,
+            ContextData(),
+            ObjectType(ObjectIdentity(oid))
+        )
+        err_ind, err_stat, err_idx, var_binds = await iterator
+        # release sockets
+        eng.close_dispatcher()
+        if err_ind or err_stat:
+            return None
+        return var_binds[0][1].prettyPrint()
+    except Exception:
+        return None
+
+async def _get_snmp_data_async(oid: str, ip: str) -> str | None:
+    # Try v2c first
+    v2 = await _snmp_get_once(ip, oid, mp_model=1)
+    if v2:
+        return v2
+    # Fallback to v1
+    v1 = await _snmp_get_once(ip, oid, mp_model=0)
+    return v1
+
+def get_snmp_data(oid: str, ip: str) -> str | None:
+    """ Synchronous wrapper for SNMP GET that returns a string or None. """
+    try:
+        return asyncio.run(_get_snmp_data_async(oid, ip))
+    except Exception:
+        return None
+
+
+# Function to validate the IP address in the OID is a valid address and not default of 0.0.0.0
+def is_valid_ip(ldap_server_value: str) -> bool:
+    """ Validate the IP address and ensure it's not the default 0.0.0.0.
+        Accepts 'A.B.C.D' or 'A.B.C.D.port' formats. """
+    try:
         parts = ldap_server_value.split('.')
 
         # If we have more than 4 parts, assume the last part is the port number
@@ -106,14 +140,12 @@ def is_valid_ip(ldap_server_value):
         if ip == "0.0.0.0":
             return False
 
-        # Optionally, validate the port (e.g., check it's within a valid range)
-        if port != None and(not port.isdigit() or not (0 < int(port) <= 65535)):
+        # Validate the port if present
+        if port is not None and (not port.isdigit() or not (0 < int(port) <= 65535)):
             print(f"Invalid port: {port}")
             return False
 
         return True
-
     except ValueError:
-        # If splitting or validating the IP fails, return False
         return False
 

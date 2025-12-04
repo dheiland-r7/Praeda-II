@@ -1,4 +1,4 @@
-# HP consumer grade printer finger print validation  
+# Brother printer finger print validation  
 ######################################################
 #                 PRAEDA II Module #MPHP
 #                  Copyright (C) 2023
@@ -21,19 +21,19 @@ from pysnmp.hlapi.v3arch.asyncio import (
 )
 
 # OID for device model string (HP)
-DEVICE_MODEL_OID = '1.3.6.1.4.1.11.2.3.9.1.1.7.0'  # returns string incl. "MDL:..."
+DEVICE_MODEL_OID = '1.3.6.1.2.1.25.3.2.1.3.1'  # returns string "
 
 # ------------------------ helpers ------------------------
 
 def extract_device_model(snmp_data: str) -> str:
     """
-    Extract the device model from a string that may contain 'MDL:<model>;...'
-    Falls back to the whole string if MDL: isn't present.
+    Return SNMP model data exactly as provided by the OID.
+    No parsing.
     """
-    match = re.search(r'MDL:([^;]+)', snmp_data)
-    if match:
-        return match.group(1).strip()
-    return snmp_data.strip() if snmp_data else "Unknown Model"
+    if snmp_data and snmp_data.strip():
+        return snmp_data.strip()
+    return "Unknown Model"
+
 
 async def _snmp_get_once(target: str, oid: str, mp_model: int, timeout: float = 2.0, retries: int = 1) -> str | None:
     """
@@ -82,7 +82,7 @@ def get_device_model_snmp(target: str, oid: str) -> str | None:
 
 # ------------------------ job entry ------------------------
 
-def MPHP(TARGET, PORTS, web, OUTPUT, LOGFILE, data1):
+def MPBP(TARGET, PORTS, web, OUTPUT, LOGFILE, data1):
     # Open output file for logging
     try:
         with open(f'{OUTPUT}/{LOGFILE}.log', 'a') as logFile:

@@ -5,31 +5,14 @@ This file is used to list a few config items and recommendations. Also some basi
 
 Required Python modules extracted from source using pipreqs:  
   ```
-beautifulsoup4==4.13.3
-colorama==0.4.6
-ConfigParser==7.2.0
-cryptography==44.0.2
-docutils==0.21.2
-filelock==3.18.0
-HTMLParser==0.0.2
-ipython==8.12.3
-ipywidgets==8.1.5
-keyring==25.6.0
-netaddr==1.3.0
-Pillow==11.1.0
-protobuf==6.30.1
-pyOpenSSL==25.0.0
-pysnmp==4.4.12
-redis==5.2.1
-Sphinx==8.2.3
-thread==2.0.5
-urllib3_secure_extra==0.1.0
-pyasyncore==1.0.4
-pyasn1==0.5.1
-urllib3==2.2.3
+pysnmp==7.1
+requestsb==2.31
+urllib3==2.0
+beautifulsoup4== 4.12
+netaddr==0.9
 ```
 
-To install, it's highly recommended to use a Python 3.12 or higher virtual environment to avoid version dependency conflicts.
+To install, it's highly recommended to use Python 3.13.9 or higher virtual environment to avoid version dependency conflicts.
 
 ```
 python -m venv path/to/virtual/environment

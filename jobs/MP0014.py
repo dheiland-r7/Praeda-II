@@ -17,7 +17,7 @@ import subprocess
 import xml.etree.ElementTree as ET
 from bs4 import BeautifulSoup
 import base64
-from pysnmp.hlapi import getCmd, CommunityData, SnmpEngine, UdpTransportTarget, ContextData, ObjectType, ObjectIdentity
+# from pysnmp.hlapi import get_cmd, CommunityData, SnmpEngine, UdpTransportTarget, ContextData, ObjectType, ObjectIdentity
 
 
 def MP0014(target, ports, web, output, logfile, data1):
