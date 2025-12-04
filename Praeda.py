@@ -8,10 +8,9 @@
 # |_|   |_|  \__,_|\___|\__,_|\__,_| |_____|_____|
 #                                                 
 #   Deral (Percent_x) Heiland - Rapid7 
-#   Copywrite 2023, 2024
-#   PRAEDA II version 1.25b 
+#   Copywrite 2023, 2024, 2025
+#   PRAEDA II version 2.0  25 modules 864 flags
 ###################################################
-
 
 import sys
 import os
@@ -21,16 +20,28 @@ import time
 import subprocess
 from bs4 import BeautifulSoup
 # from pysnmp.entity.rfc3413.oneliner import cmdgen  THIS IS BEING REMOVED
-from pysnmp.hlapi import *
+# from pysnmp.hlapi import *      # REMOVED: legacy wildcard import (incompatible with pysnmp 7.x)
 from netaddr import IPNetwork, IPAddress
 import urllib3
 from urllib3.exceptions import InsecureRequestWarning
 import requests
 from requests.exceptions import RequestException
-from pysnmp.hlapi import *
+# from pysnmp.hlapi import *      # REMOVED: duplicate legacy wildcard import
 from requests.adapters import HTTPAdapter
 from urllib3.poolmanager import PoolManager
 import ssl
+import asyncio  # NEW: required for async SNMP
+
+# NEW: PySNMP 7.x asyncio HLAPI (PEP8 functions)
+from pysnmp.hlapi.v3arch.asyncio import (
+    SnmpEngine,
+    CommunityData,
+    UdpTransportTarget,
+    ContextData,
+    ObjectType,
+    ObjectIdentity,
+    get_cmd,
+)
 
 # Suppress SSL/TLS warnings
 urllib3.disable_warnings(InsecureRequestWarning)
@@ -170,7 +181,6 @@ def check_port(target, ports, ignore_ports=""):
             pass
     return status
 
-
 # gnmap parsing routine
 def gnmap_parse(GNMAPFILE, OUTPUT):
     try:
@@ -201,7 +211,6 @@ def gnmap_parse(GNMAPFILE, OUTPUT):
     except Exception as e:
         print(f"Error: {str(e)}")
     return
-
 
 # cidr input parse routine
 def cidr_parse(CIDRFIL, OUTPUT):
@@ -250,26 +259,59 @@ def parse_output_files(project_folder, output_file):
         print("Error! Can't resume. Necessary files don't exist.")
     sys.exit(1)
 
-# snmp device identifier routine
-def snmp_get(target):
-    # Create an SNMP GET request
-    error_indication, error_status, error_index, var_binds = next(
-        getCmd(
-            SnmpEngine(),
-            CommunityData('public'),
-            UdpTransportTarget((target, 161)),
-            ContextData(),
-            ObjectType(ObjectIdentity('1.3.6.1.2.1.1.1.0'))
-        )
-    )
+# -------------------- SNMP device identifier routine (PySNMP 7.x async; v2c -> v1 fallback) --------------------
 
-    # Check for SNMP errors
-    if error_indication:
+SYS_DESCR = ObjectType(ObjectIdentity('1.3.6.1.2.1.1.1.0'))  # sysDescr.0
+
+async def _snmp_get_once(target: str, mp_model: int, timeout: float = 1.0, retries: int = 0) -> str | None:
+    """
+    Single SNMP GET for sysDescr.0 using PySNMP 7.x asyncio HLAPI.
+    mp_model: 1 = v2c, 0 = v1
+    Returns the value string on success, or None on failure.
+    """
+    try:
+        eng = SnmpEngine()
+        # IMPORTANT: async transport factory is required in pysnmp 7.x
+        transport = await UdpTransportTarget.create((target, 161), timeout=timeout, retries=retries)
+        iterator = get_cmd(
+            eng,
+            CommunityData('public', mpModel=mp_model),  # fixed community
+            transport,
+            ContextData(),
+            SYS_DESCR
+        )
+        err_ind, err_stat, err_idx, var_binds = await iterator
+        # release sockets
+        eng.close_dispatcher()
+
+        if err_ind or err_stat:
+            return None
+        return var_binds[0][1].prettyPrint()
+    except Exception:
+        return None
+
+async def snmp_get_async(target: str) -> str:
+    """
+    Try v2c first; ONLY if v2c fails, try v1.
+    """
+    v2 = await _snmp_get_once(target, mp_model=1)  # v2c
+    if v2 is not None:
+        return v2
+
+    v1 = await _snmp_get_once(target, mp_model=0)  # v1 fallback
+    if v1 is not None:
+        return v1
+
+    return "N/A"
+
+def snmp_get(target: str) -> str:
+    """
+    Sync wrapper used elsewhere in Praeda-II.
+    """
+    try:
+        return asyncio.run(snmp_get_async(target))
+    except Exception:
         return "N/A"
-    else:
-        # Extract the value of the sysDescr OID
-        sys_descr_value = var_binds[0][1].prettyPrint()
-        return sys_descr_value
 
 # Create a custom adapter to set the SECLEVEL
 class SSLAdapter(HTTPAdapter):
@@ -290,7 +332,6 @@ class SSLAdapter(HTTPAdapter):
             block=block,
             ssl_context=self.ssl_context,
         )
-
 
 #--------------------------------------------END--Subroutines---------------------------------------------------#
 
@@ -330,7 +371,6 @@ if options["r"]:
     LAST_TARGET = parse_output_files(PROJECT_FOLDER, NAME)
     NEXT_TARGET = LAST_TARGET + 1
 
-
 OUTPUT = options["j"]
 LOGFILE = options["l"] 
 
@@ -355,8 +395,8 @@ for TARGET in targets:
             TARGET, PORTS, N = TARGET.split(':')
         else:
             TARGET, PORTS = TARGET.split(':')
-    
-# Call Port Check Routine
+
+    # Call Port Check Routine
     if options["i"]:
         status = check_port(TARGET, PORTS, IGNORE_PORTS)
     else:
@@ -367,31 +407,29 @@ for TARGET in targets:
     elif status == SOCKET_IS_IGNORED:
         print(f"{TARGET}:{PORTS}:IGNORED BY REQUEST")
 
-
-# Perform HTTP request to gather title/server data and call SNMP routin for gather SNMP device name data
+    # Perform HTTP request to gather title/server data and call SNMP routin for gather SNMP device name data
     else:
         try:
             # Create a session and attach the custom SSL adapter
             session = requests.Session()
             session.mount('https://', SSLAdapter())
             session.mount('http://', SSLAdapter())
-        # Make an HTTP request
+            # Make an HTTP request
             url = f"http{web}://{TARGET}:{PORTS}/"  
-            #response = requests.get(url, verify=False)  # `verify=False` skips SSL certificate verification. 
             response = session.get(url, verify=False, timeout=(REQUEST_TIMEOUT))  # `verify=False` skips SSL certificate verification. 
 
-        # Check if the request was successful
+            # Check if the request was successful
             if response.status_code == 200:
-            # Extract data from the HTTP response
+                # Extract data from the HTTP response
                 d1 = response.headers.get("Title", "")
                 d1 = d1.replace(":", ";")
                 d2 = response.headers.get("Server", "")
                 d2 = d2.replace(":", ";")
-            # call snmp routine for target data
+                # call snmp routine for target data
                 d3 = snmp_get(TARGET)
                 d3 = d3.replace(":", ";")
 
-            # print to screen targeted device inforation
+                # print to screen targeted device inforation
                 print(f"{TARGET}:{PORTS}:{d1}:{d2}:{d3}")
 
                 with open(f"{OUTPUT}/{LOGFILE}-WebHost.txt", 'a') as webFile:
@@ -402,9 +440,6 @@ for TARGET in targets:
                     data = values[0]
                     data1 = values[1]
                     data2 = values[2]
-                    #if (data1.lower() in data.lower() and data2.lower() in d3.lower()) or (
-                    #         #"SNMP" in data2 and data1.lower() in d3.lower()):
-                    #         "SNMP" in data2 and data1.lower() in d3.lower()):
                     if ("HEADER" in data2 and data1.lower() in d2.lower()) or (
                              "SNMP" in data2 and data1.lower() in d3.lower()) or (
                              "SERVER" in data2 and data1.lower() in d2.lower()):
@@ -414,7 +449,6 @@ for TARGET in targets:
                             if values[i] != '':
                                 with open(f"{OUTPUT}/{LOGFILE}.log", 'a') as logFile:
                                     logFile.write(f"\n")
-                                    #logFile.write(f"\n{TARGET}:{PORTS}:{data1}:{data2}:\n")
                                 job = values[i]
                                 module = __import__(f'jobs.{job}', fromlist=[job])
                                 job_func = getattr(module, job)
@@ -424,10 +458,10 @@ for TARGET in targets:
                 print(f"Failed to retrieve data. Status code: {response.status_code}")
         except RequestException as e:
             # Handles any request-related errors
-                print(f"An error occurred while trying to retrieve data from {url}: {e}")
+            print(f"An error occurred while trying to retrieve data from {url}: {e}")
         except Exception as e:
             # A catch-all for any other errors that were not anticipated
-                print(f"An unexpected error occurred: {e}")
-
+            print(f"An unexpected error occurred: {e}")
 
 #-----------------------------------------------END OF ALL------------------------------------------------------#
+

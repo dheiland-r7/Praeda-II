@@ -14,7 +14,7 @@ import requests
 import xml.etree.ElementTree as ET
 from bs4 import BeautifulSoup
 import base64
-from pysnmp.hlapi import getCmd, CommunityData, SnmpEngine, UdpTransportTarget, ContextData, ObjectType, ObjectIdentity
+# from pysnmp.hlapi import get_cmd, CommunityData, SnmpEngine, UdpTransportTarget, ContextData, ObjectType, ObjectIdentity
 
 
 def MP0012(target, ports, web, output, logfile, data1):
@@ -39,7 +39,7 @@ def MP0012(target, ports, web, output, logfile, data1):
 		#Check If Address Book Accessible
 			if response.status_code == 200 and "Address List" in str(response.content):
 				print("\033[91mSUCCESS\033[0m: The RICOH device Address Book is accessible.\n")
-			else response.status_code == 200 and "form1" in str(response.content):
+			elif response.status_code == 200 and "form1" in str(response.content):
 				print("\033[91mFAIL\033[0m: The RICOH device Address Book appears to be behind a login portal.\n")
 				#if :
 				#print("Code for Trying if Admin Login default already discovered...")
