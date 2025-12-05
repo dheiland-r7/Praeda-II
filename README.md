@@ -52,8 +52,11 @@ Also if running Praeda on a bare metal install you may be able to change the fol
 **Praeda-II Training Videos**
 
 We also have created a youtube site where we have placed a few training videos on using Praeda-II
+
 **https://www.youtube.com/@praeda-ii**
 
+
+**--Praeda-II options and settings--**
 
 
 **PRAEDA OPTIONS:**
