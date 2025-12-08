@@ -61,7 +61,7 @@ def MP0005(target, ports, web, output, logfile, data1):
                 if enable_element is not None and server_address_element is not None:
                     if enable_element.text == "true" and server_address_element.text != "0.0.0.0":
                         print(f"\033[91mSUCCESS\033[0m: The LDAP service is enabled : Server IP:{server_address_element.text} User Name:{user_name_element.text} Server Auth:{server_auth_element.text} Authentication Method:{auth_method_element.text}")
-                        logFile.write(f"\033[91mSUCCESS\033[0m:2:The LDAP service is enabled:{target}:{ports}:{data1}:{user_name_element.text}:{server_auth_element.text}:{auth_method_element.text}::")
+                        logFile.write(f"\033[91mSUCCESS\033[0m:2:The LDAP service is enabled:{target}:{ports}:{data1}:{user_name_element.text}:{server_auth_element.text}:{auth_method_element.text}::auxiliary/server/ldap")
                     else:
                         print("LDAP is either not enabled or has an invalid server address.")
                 else:
