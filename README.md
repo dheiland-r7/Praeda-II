@@ -141,11 +141,10 @@ Field 1: SUCCESS/FAILED<br/>
 Field 2: Data type<br/>
 &emsp;0: Not Defined<br/>
 &emsp;1: Device Password<br/>
-&emsp;2: Password data ( Email, Active Directory, FTP , Ect...)<br/>
+&emsp;2: Protocol Service Enabled (LDAP, SMB, FTP, EMAIL)<br/>
 &emsp;3: Extracted file data ( None Account Information such as print jobs or documents)<br/>
 &emsp;4: Address books<br/>
 &emsp;5: Finger Print<br/>
-&emsp;6: Protocol Service Enabled<br/>
 Field 3: Description<br/>
 Field 4: Device IP Address<br/>
 Field 5: Device Port Number<br/>
