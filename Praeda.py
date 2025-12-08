@@ -9,8 +9,8 @@
 #                                                 
 #   Deral (Percent_x) Heiland - Rapid7 
 #   Copywrite 2023, 2024, 2025
-#   PRAEDA II version 2.0  25 modules 864 flags
-###################################################
+#   PRAEDA II version 2.0  25 modules 920 Fingerprint
+######################################################
 
 import sys
 import os
