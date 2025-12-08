@@ -56,13 +56,13 @@ def MP0018(target, ports, web, output, logfile, data1):
 
                 print(f"\033[91mSUCCESS\033[0m: The Brother MFP {target} appears to be configured for LDAP services:")
                 logFile.write(
-                    f"\033[91mSUCCESS\033[0m:5:The LDAP service is enabled:{target}:{ports}:{data1}:"
+                    f"\033[91mSUCCESS\033[0m:2:The LDAP service is enabled:{target}:{ports}:{data1}:"
                     f"LDAP User Name {ldap_values[0]}:LDAP Auth Type {auth_type}:::auxiliary/server/ldap\n"
                 )
             else:
                 print(f"FAILURE:  The Brother MFP {target} does not appear to have LDAP services configured ")
                 logFile.write(
-                    f"\033[91mFAILURE\033[0m:5:The LDAP services does not appear to be configured:"
+                    f"\033[91mFAILURE\033[0m:2:The LDAP services does not appear to be configured:"
                     f"{target}:{ports}:{data1}:::::\n"
                 )
 
